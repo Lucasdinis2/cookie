@@ -1,0 +1,104 @@
+---
+import '@fontsource-variable/fredoka';
+import '@fontsource/poppins/400.css';
+import '@fontsource/poppins/500.css';
+import '@fontsource/poppins/600.css';
+import '@fontsource/yellowtail/400.css';
+import '../styles/global.css';
+import { SITE } from '../config/site.mjs';
+import { FLAVORS } from '../data/flavors';
+
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+}
+
+const {
+  title = `${SITE.name} | Cookies artesanais recheados em ${SITE.city} – ${SITE.state}`,
+  description = `Cookies artesanais recheados feitos com carinho em ${SITE.city} – ${SITE.state}. Nutella, Cookies & Cream, Brigadeiro e Triple Chocolate. Faça sua encomenda pelo WhatsApp — entregamos em ${SITE.city}.`,
+  noindex = false,
+} = Astro.props;
+
+const site = Astro.site;
+const canonical = site ? new URL(Astro.url.pathname, site).href : undefined;
+const ogImage = site ? new URL('/og-image.jpg', site).href : '/og-image.jpg';
+
+// Dados estruturados: apenas informações verdadeiras e disponíveis.
+const sameAs = [SITE.contact.instagram && `https://www.instagram.com/${SITE.contact.instagram}`].filter(Boolean);
+const jsonLd: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'Bakery',
+  name: SITE.name,
+  description,
+  image: ogImage,
+  areaServed: { '@type': 'City', name: `${SITE.city}, ${SITE.state}`, address: { '@type': 'PostalAddress', addressLocality: SITE.city, addressRegion: SITE.state, addressCountry: 'BR' } },
+  servesCuisine: 'Cookies artesanais',
+  hasMenu: {
+    '@type': 'Menu',
+    name: 'Sabores MOKKI',
+    hasMenuSection: {
+      '@type': 'MenuSection',
+      name: 'Cookies recheados',
+      hasMenuItem: FLAVORS.map((f) => ({
+        '@type': 'MenuItem',
+        name: f.name,
+        description: f.description,
+        ...(f.price != null ? { offers: { '@type': 'Offer', price: f.price.toFixed(2), priceCurrency: SITE.currency } } : {}),
+      })),
+    },
+  },
+};
+if (site) jsonLd.url = site.href;
+if (SITE.contact.whatsapp) jsonLd.telephone = `+${SITE.contact.whatsapp}`;
+if (SITE.contact.email) jsonLd.email = SITE.contact.email;
+if (sameAs.length) jsonLd.sameAs = sameAs;
+---
+
+<!doctype html>
+<html lang="pt-BR" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content="#C5DCE5" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="geo.region" content={`BR-${SITE.state}`} />
+    <meta name="geo.placename" content={SITE.city} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="MOKKI Cookies — cookies artesanais recheados em Juiz de Fora – MG" />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link rel="preload" href="/textures/photo-top.webp" as="image" type="image/webp" media="(min-width: 769px)" crossorigin="anonymous" />
+
+    <script is:inline>
+      document.documentElement.classList.remove('no-js');
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('reduced-motion');
+    </script>
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <slot />
+  </body>
+</html>

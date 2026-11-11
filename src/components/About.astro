@@ -1,0 +1,314 @@
+---
+import { Image } from 'astro:assets';
+import Mascot from './Mascot.astro';
+import Icon from './Icon.astro';
+import cookieCutout from '../assets/photos/cookie-cutout.png';
+import { FLAVORS } from '../data/flavors';
+import { SITE } from '../config/site.mjs';
+
+const marquee = FLAVORS.map((f) => f.name);
+const details = [
+  { icon: 'heart', title: 'Feitos com carinho', text: 'Cada fornada é preparada com cuidado, do jeitinho que um cookie merece.' },
+  { icon: 'sparkle', title: 'Ingredientes selecionados', text: 'Escolhemos o que vai na massa e no recheio pensando no sabor.' },
+  { icon: 'whisk', title: 'Aquele recheio', text: 'O recheio cremoso que transforma qualquer momento em ocasião especial.' },
+] as const;
+const badge = `FEITO COM CARINHO • MOKKI COOKIES • ${SITE.city.toUpperCase()} • `;
+---
+
+<div class="marquee-wrap" aria-hidden="true">
+<div class="marquee">
+  <div class="marquee__track" data-marquee>
+    {
+      [0, 1].map(() => (
+        <div class="marquee__group">
+          {marquee.map((m) => (
+            <span class="marquee__item">
+              <span class="script">{m}</span>
+              <svg viewBox="0 0 24 24" width="22" height="22">
+                <circle cx="12" cy="12" r="10" fill="currentColor" />
+                <circle cx="9" cy="9" r="1.6" fill="var(--brown)" />
+                <circle cx="14.5" cy="13" r="1.8" fill="var(--brown)" />
+                <circle cx="9.5" cy="15" r="1.2" fill="var(--brown)" />
+              </svg>
+            </span>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+</div>
+</div>
+
+<section id="sobre" class="about" aria-labelledby="sobre-title">
+  <div class="about__stripes" aria-hidden="true"></div>
+  <div class="container about__grid">
+    <div class="about__copy">
+      <p class="eyebrow" data-reveal>Feitos para você</p>
+      <h2 id="sobre-title" class="section-title">
+        <span class="mask-line"><span data-split-line>Pequenos detalhes.</span></span>
+        <span class="mask-line"><span data-split-line><em class="script">Grandes momentos.</em></span></span>
+      </h2>
+      <p class="lead" data-reveal>
+        Cookies preparados com cuidado, ingredientes selecionados e aquele recheio que transforma qualquer momento em
+        uma ocasião especial.
+      </p>
+
+      <ul class="about__details" role="list">
+        {
+          details.map((d, i) => (
+            <li data-reveal style={`--d:${i}`}>
+              <span class="about__icon">
+                <Icon name={d.icon} size={24} />
+              </span>
+              <span>
+                <strong>{d.title}</strong>
+                <span>{d.text}</span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="about__art" data-about-art aria-hidden="true">
+      <div class="about__plate" data-parallax="-0.12"></div>
+      <div class="about__cookie" data-parallax="0.08" data-spin-scroll>
+        <Image src={cookieCutout} alt="" widths={[360, 560, 760]} sizes="(max-width: 768px) 70vw, 420px" loading="lazy" />
+      </div>
+      <div class="about__badge" data-parallax="-0.2">
+        <svg viewBox="0 0 200 200">
+          <defs>
+            <path id="badge-circle" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" />
+          </defs>
+          <circle cx="100" cy="100" r="98" fill="var(--brown)" />
+          <text font-size="13" font-weight="600" fill="var(--cream)" font-family="Poppins, sans-serif">
+            <textPath href="#badge-circle" textLength="486" lengthAdjust="spacing">{badge}</textPath>
+          </text>
+          <circle cx="100" cy="100" r="38" fill="var(--cream)" />
+          <path
+            d="M100 84c-6-9-20-6-20 5 0 10 20 22 20 22s20-12 20-22c0-11-14-14-20-5z"
+            fill="var(--brown)"
+          />
+        </svg>
+      </div>
+      <div class="about__mascot" data-parallax="0.18">
+        <Mascot />
+      </div>
+      <span class="about__chip" style="--x: 8%; --y: 18%; --s: 1.1" data-follow="0.04"></span>
+      <span class="about__chip" style="--x: 82%; --y: 10%; --s: 0.8" data-follow="-0.05"></span>
+      <span class="about__chip" style="--x: 90%; --y: 78%; --s: 1" data-follow="0.06"></span>
+      <span class="about__crumb" style="--x: 20%; --y: 84%" data-follow="-0.03"></span>
+      <span class="about__crumb" style="--x: 64%; --y: 92%" data-follow="0.05"></span>
+      <span class="about__crumb" style="--x: 4%; --y: 50%" data-follow="0.03"></span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .marquee-wrap {
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+    padding: 24px 0;
+    margin: -24px 0;
+  }
+  .marquee {
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+    background: var(--brown);
+    color: var(--cream);
+    padding: 16px 0;
+    rotate: -1.6deg;
+    margin: -10px -2vw;
+    box-shadow: 0 10px 30px rgb(73 43 39 / 0.18);
+  }
+  .marquee__track {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+  }
+  .marquee__group {
+    display: flex;
+  }
+  .marquee__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 28px;
+    padding-right: 28px;
+    font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .marquee__item svg {
+    color: var(--blue);
+  }
+
+  .about {
+    position: relative;
+    padding: clamp(100px, 13vw, 170px) 0;
+    background: var(--blue);
+    overflow: clip;
+  }
+  .about__stripes {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 28px;
+    background: repeating-linear-gradient(90deg, var(--brown) 0 14px, var(--blue) 14px 28px);
+    opacity: 0.9;
+  }
+  .about__grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: clamp(40px, 6vw, 90px);
+    align-items: center;
+  }
+  .about__copy {
+    display: grid;
+    gap: 22px;
+  }
+  .about__copy em {
+    font-style: normal;
+    font-size: 1.12em;
+    color: var(--teal);
+    font-weight: 400;
+  }
+  .about__details {
+    display: grid;
+    gap: 14px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .about__details li {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 16px 18px;
+    border-radius: var(--radius-m);
+    background: rgb(255 252 240 / 0.6);
+    border: 1px solid rgb(73 43 39 / 0.08);
+    transition:
+      transform 0.4s var(--ease-spring),
+      background 0.3s;
+  }
+  .about__details li:hover {
+    transform: translateX(6px);
+    background: var(--paper);
+  }
+  .about__details strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--brown);
+  }
+  .about__details li span span {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--brown-soft);
+  }
+  .about__icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--brown);
+    color: var(--cream);
+  }
+
+  .about__art {
+    position: relative;
+    aspect-ratio: 1;
+    max-width: 560px;
+    width: 100%;
+    justify-self: center;
+  }
+  .about__plate {
+    position: absolute;
+    inset: 9%;
+    border-radius: 50%;
+    background: repeating-conic-gradient(from 0deg, var(--cream) 0 7.5deg, var(--paper) 7.5deg 15deg);
+    box-shadow:
+      inset 0 0 0 14px var(--cream),
+      0 30px 60px rgb(73 43 39 / 0.18);
+  }
+  .about__cookie {
+    position: absolute;
+    inset: 17%;
+    filter: drop-shadow(0 26px 30px rgb(60 35 25 / 0.3));
+  }
+  .about__cookie :global(img) {
+    width: 100%;
+    height: auto;
+  }
+  .about__badge {
+    position: absolute;
+    right: -2%;
+    top: -2%;
+    width: 30%;
+    animation: spin 22s linear infinite;
+  }
+  .about__badge svg {
+    width: 100%;
+    height: auto;
+  }
+  @keyframes spin {
+    to {
+      rotate: 360deg;
+    }
+  }
+  .about__mascot {
+    position: absolute;
+    left: -6%;
+    bottom: -4%;
+    width: 38%;
+    padding: 6%;
+    border-radius: 50%;
+    background: var(--cream);
+    box-shadow: var(--shadow-m);
+    animation: wave 3.4s ease-in-out infinite;
+    transform-origin: 50% 90%;
+  }
+  @keyframes wave {
+    0%,
+    100% {
+      rotate: -4deg;
+    }
+    50% {
+      rotate: 5deg;
+      translate: 0 -6px;
+    }
+  }
+  .about__chip {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: calc(30px * var(--s));
+    height: calc(26px * var(--s));
+    border-radius: 48% 52% 44% 56% / 58% 50% 50% 42%;
+    background: radial-gradient(circle at 35% 30%, #7a4a35, var(--chocolate) 62%);
+    box-shadow: inset -3px -4px 6px rgb(0 0 0 / 0.3);
+  }
+  .about__crumb {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 12px;
+    height: 10px;
+    border-radius: 40% 60% 50% 50%;
+    background: #d7a160;
+  }
+
+  @media (max-width: 860px) {
+    .about__grid {
+      grid-template-columns: 1fr;
+    }
+    .about__art {
+      order: -1;
+      max-width: 420px;
+    }
+  }
+</style>

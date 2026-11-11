@@ -1,0 +1,69 @@
+---
+import Icon from './Icon.astro';
+---
+
+<div class="order-bar" data-order-bar aria-hidden="true">
+  <a href="#pedidos" class="order-bar__btn" tabindex="-1">
+    <span class="order-bar__icon"><Icon name="bag" size={20} /></span>
+    <span class="order-bar__text">
+      <strong>Monte seu pedido</strong>
+      <small data-order-bar-count>Escolha seus sabores</small>
+    </span>
+    <Icon name="arrow" size={20} />
+  </a>
+</div>
+
+<style>
+  .order-bar {
+    display: none;
+  }
+  @media (max-width: 768px) {
+    .order-bar {
+      display: block;
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      z-index: 40;
+      transform: translateY(140%);
+      transition: transform 0.55s var(--ease-spring);
+    }
+    .order-bar.is-visible {
+      transform: none;
+    }
+    .order-bar__btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 18px 8px 8px;
+      border-radius: 999px;
+      background: var(--brown);
+      color: var(--cream);
+      text-decoration: none;
+      box-shadow: 0 12px 30px rgb(73 43 39 / 0.35);
+    }
+    .order-bar__icon {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--cream);
+      color: var(--brown);
+    }
+    .order-bar__text {
+      display: grid;
+      flex: 1;
+      line-height: 1.2;
+    }
+    .order-bar__text strong {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 1.05rem;
+    }
+    .order-bar__text small {
+      font-size: 0.78rem;
+      opacity: 0.8;
+    }
+  }
+</style>

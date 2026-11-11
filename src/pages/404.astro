@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import Mascot from '../components/Mascot.astro';
+import Logo from '../components/Logo.astro';
+---
+
+<Base title="Página não encontrada | MOKKI Cookies" noindex>
+  <main id="conteudo" class="nf">
+    <a href="/" class="nf__logo" aria-label="MOKKI Cookies — página inicial"><Logo /></a>
+    <div class="nf__mascot"><Mascot /></div>
+    <h1>Ops! Essa página virou farelo.</h1>
+    <p>O endereço que você procurou não existe (ou alguém comeu antes de você).</p>
+    <a href="/" class="btn">Voltar para os cookies</a>
+  </main>
+</Base>
+
+<style>
+  .nf {
+    min-height: 100svh;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 20px;
+    padding: 40px 20px;
+    text-align: center;
+    background: var(--blue);
+  }
+  .nf__logo {
+    width: 150px;
+  }
+  .nf__mascot {
+    width: 200px;
+    animation: wiggle 3s ease-in-out infinite;
+  }
+  @keyframes wiggle {
+    50% {
+      rotate: 6deg;
+    }
+  }
+  h1 {
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    max-width: 16ch;
+  }
+  p {
+    color: var(--brown-soft);
+    max-width: 40ch;
+  }
+</style>

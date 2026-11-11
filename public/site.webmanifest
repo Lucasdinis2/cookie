@@ -1,0 +1,13 @@
+{
+  "name": "MOKKI Cookies",
+  "short_name": "MOKKI",
+  "description": "Cookies artesanais recheados em Juiz de Fora – MG.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF0BD",
+  "theme_color": "#C5DCE5",
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

@@ -1,0 +1,23 @@
+---
+/** Mascote do cardápio da MOKKI (vetorizado da arte original). */
+import mascot from '../assets/brand/mokki-mascote.svg?raw';
+interface Props {
+  class?: string;
+}
+const { class: cls } = Astro.props;
+const svg = mascot.replace('<svg ', '<svg aria-hidden="true" focusable="false" ');
+---
+
+<span class:list={['mascot', cls]} set:html={svg} />
+
+<style>
+  .mascot {
+    display: inline-block;
+    line-height: 0;
+    color: var(--teal);
+  }
+  .mascot :global(svg) {
+    width: 100%;
+    height: auto;
+  }
+</style>

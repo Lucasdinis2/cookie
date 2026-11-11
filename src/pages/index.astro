@@ -1,0 +1,54 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import Flavors from '../components/Flavors.astro';
+import About from '../components/About.astro';
+import Order from '../components/Order.astro';
+import Footer from '../components/Footer.astro';
+import MobileOrderBar from '../components/MobileOrderBar.astro';
+import { SITE } from '../config/site.mjs';
+---
+
+<Base>
+  <Header />
+  <main id="conteudo" tabindex="-1">
+    <Hero />
+    <Flavors />
+    <About />
+    <Order />
+  </main>
+  <Footer />
+  <MobileOrderBar />
+  {
+    import.meta.env.DEV && !SITE.contact.whatsapp && !SITE.contact.instagram && (
+      <p class="dev-note" role="note">
+        Modo dev: configure o WhatsApp em <code>src/config/site.mjs</code> (contact.whatsapp).
+      </p>
+    )
+  }
+</Base>
+
+<script>
+  import '../scripts/main';
+</script>
+
+<style>
+  main:focus {
+    outline: none;
+  }
+  .dev-note {
+    position: fixed;
+    left: 12px;
+    bottom: 12px;
+    z-index: 100;
+    max-width: 320px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: #fff;
+    color: #7a2a12;
+    font-size: 0.78rem;
+    box-shadow: var(--shadow-s);
+    pointer-events: none;
+  }
+</style>

@@ -1,0 +1,505 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import Mascot from './Mascot.astro';
+import { FLAVORS } from '../data/flavors';
+import { SITE } from '../config/site.mjs';
+
+const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: SITE.currency });
+const hasPrices = FLAVORS.some((f) => f.price != null);
+const channel = SITE.contact.whatsapp ? 'whatsapp' : SITE.contact.instagram ? 'instagram' : 'whatsapp';
+const orderConfig = {
+  whatsapp: SITE.contact.whatsapp,
+  instagram: SITE.contact.instagram,
+  city: SITE.city,
+  state: SITE.state,
+  currency: SITE.currency,
+  flavors: FLAVORS.filter((f) => f.available).map((f) => ({ id: f.id, name: f.name, price: f.price })),
+};
+---
+
+<section id="pedidos" class="order" aria-labelledby="pedidos-title">
+  <div class="container order__grid">
+    <div class="order__intro">
+      <p class="eyebrow" data-reveal>Pedidos</p>
+      <h2 id="pedidos-title" class="section-title">
+        <span class="mask-line"><span data-split-line>Seu próximo cookie</span></span>
+        <span class="mask-line"><span data-split-line>favorito está a</span></span>
+        <span class="mask-line"><span data-split-line><em class="script">um clique de distância.</em></span></span>
+      </h2>
+      <p class="lead" data-reveal>Escolha seu sabor favorito e faça seu pedido!</p>
+
+      <div class="delivery" data-reveal>
+        <span class="delivery__stamp" aria-hidden="true">
+          <Icon name="pin" size={30} />
+        </span>
+        <div>
+          <p class="delivery__title">Entregamos em {SITE.city}!</p>
+          <p class="delivery__text">
+            As entregas são feitas <strong>exclusivamente em {SITE.city} – {SITE.state}</strong>.
+          </p>
+        </div>
+      </div>
+
+      {
+        (SITE.hours.length > 0 || SITE.orderNotes.length > 0) && (
+          <ul class="order__info" data-reveal>
+            {SITE.hours.map((h) => (
+              <li>
+                <Icon name="clock" size={18} /> {h}
+              </li>
+            ))}
+            {SITE.orderNotes.map((n) => (
+              <li>
+                <Icon name="sparkle" size={18} /> {n}
+              </li>
+            ))}
+          </ul>
+        )
+      }
+
+      <div class="order__mascot" aria-hidden="true" data-parallax="0.1">
+        <Mascot />
+      </div>
+    </div>
+
+    <form class="builder" data-order-form novalidate data-reveal>
+      <div class="builder__head">
+        <h3 class="builder__title">Monte seu pedido</h3>
+        <button type="button" class="builder__clear" data-order-clear hidden>Limpar</button>
+      </div>
+
+      <fieldset class="builder__list">
+        <legend class="sr-only">Escolha os sabores e as quantidades</legend>
+        {
+          FLAVORS.filter((f) => f.available).map((f) => (
+            <div class="line" data-line={f.id}>
+              <Image
+                class="line__thumb"
+                src={f.cutout ?? f.image}
+                alt=""
+                width={112}
+                height={112}
+                loading="lazy"
+                style={f.cutout ? 'object-fit:contain' : `object-position:${f.imagePosition}`}
+              />
+              <div class="line__info">
+                <span class="line__name" id={`line-${f.id}`}>
+                  {f.name}
+                </span>
+                <span class="line__price">{f.price != null ? money.format(f.price) : f.description}</span>
+              </div>
+              <div class="stepper" role="group" aria-labelledby={`line-${f.id}`}>
+                <button type="button" class="stepper__btn" data-step="-1" data-id={f.id} aria-label={`Remover um ${f.name}`}>
+                  <Icon name="minus" size={18} />
+                </button>
+                <output class="stepper__val" data-qty={f.id} aria-live="polite" aria-label={`Quantidade de ${f.name}`}>
+                  0
+                </output>
+                <button type="button" class="stepper__btn" data-step="1" data-id={f.id} aria-label={`Adicionar um ${f.name}`}>
+                  <Icon name="plus" size={18} />
+                </button>
+              </div>
+            </div>
+          ))
+        }
+      </fieldset>
+
+      <div class="builder__fields">
+        <label class="field">
+          <span>Seu nome <small>(opcional)</small></span>
+          <input type="text" name="nome" autocomplete="name" maxlength="80" />
+        </label>
+        <label class="field">
+          <span>Bairro <small>(opcional)</small></span>
+          <input type="text" name="bairro" autocomplete="address-level3" maxlength="80" placeholder={`Seu bairro em ${SITE.city}`} />
+        </label>
+        <label class="field field--wide">
+          <span>Observações <small>(opcional)</small></span>
+          <textarea name="obs" rows="2" maxlength="300" placeholder="Ex.: é para presente, horário preferido..."></textarea>
+        </label>
+      </div>
+
+      <div class="builder__summary">
+        <p>
+          <span data-order-total-items>Nenhum cookie escolhido</span>
+          {hasPrices && <strong data-order-total-price hidden />}
+        </p>
+        <p class="builder__error" data-order-error role="alert" hidden>
+          Escolha pelo menos 1 cookie para fazer o pedido. 🍪
+        </p>
+      </div>
+
+      <button type="submit" class="btn btn--block builder__submit">
+        <Icon name={channel === 'instagram' ? 'instagram' : 'whatsapp'} size={22} />
+        Fazer meu pedido
+      </button>
+      <p class="builder__hint" data-order-hint>
+        {
+          channel === 'instagram'
+            ? `Copiamos a mensagem do seu pedido e abrimos o Direct do @${SITE.contact.instagram} — é só colar e enviar. Por lá combinamos pagamento e entrega.`
+            : 'Você será levado ao WhatsApp com a mensagem do pedido pronta. Por lá combinamos pagamento e entrega.'
+        }
+      </p>
+      <div class="builder__copy" data-order-copy hidden>
+        <label for="order-text">Se preferir, copie a mensagem do pedido:</label>
+        <textarea id="order-text" rows="6" readonly data-order-text></textarea>
+      </div>
+    </form>
+  </div>
+
+  <script type="application/json" id="order-config" set:html={JSON.stringify(orderConfig)} />
+</section>
+
+<style>
+  .order {
+    position: relative;
+    padding: clamp(90px, 12vw, 160px) 0;
+    background: var(--cream);
+    overflow: clip;
+  }
+  .order__grid {
+    display: grid;
+    grid-template-columns: 1fr 1.05fr;
+    gap: clamp(40px, 6vw, 90px);
+    align-items: start;
+  }
+  .order__intro {
+    position: relative;
+    display: grid;
+    gap: 22px;
+    align-content: start;
+  }
+  .order__intro .section-title {
+    font-size: clamp(2.3rem, 4.8vw, 4.1rem);
+  }
+  .order__intro em {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 1.1em;
+    color: var(--teal);
+  }
+
+  .delivery {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 18px 22px 18px 18px;
+    border-radius: var(--radius-m);
+    background: var(--teal);
+    color: var(--cream);
+    box-shadow: var(--shadow-s);
+    max-width: 480px;
+    rotate: -1.2deg;
+  }
+  .delivery__stamp {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--cream);
+    color: var(--teal);
+    animation: bob 2.6s ease-in-out infinite;
+  }
+  @keyframes bob {
+    50% {
+      translate: 0 -5px;
+    }
+  }
+  .delivery__title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 650;
+    line-height: 1.1;
+  }
+  .delivery__text {
+    font-size: 0.95rem;
+    opacity: 0.92;
+  }
+  .order__info {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--brown-soft);
+  }
+  .order__info li {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .order__mascot {
+    width: 190px;
+    margin-top: 10px;
+    opacity: 0.95;
+  }
+
+  /* ---------- Builder ---------- */
+  .builder {
+    position: relative;
+    display: grid;
+    gap: 22px;
+    padding: clamp(20px, 3vw, 34px);
+    border-radius: var(--radius-l);
+    background: var(--paper);
+    box-shadow: var(--shadow-m);
+    border: 1px solid rgb(73 43 39 / 0.06);
+  }
+  .builder::before {
+    content: '';
+    position: absolute;
+    inset: 0 26px auto;
+    height: 10px;
+    border-radius: 0 0 10px 10px;
+    background: repeating-linear-gradient(90deg, var(--brown) 0 10px, var(--blue) 10px 20px);
+  }
+  .builder__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .builder__title {
+    font-size: 1.7rem;
+  }
+  .builder__clear {
+    border: 0;
+    background: none;
+    color: var(--teal);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 8px;
+  }
+  .builder__list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .line {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 10px 10px 10px 10px;
+    border-radius: var(--radius-m);
+    background: var(--cream-soft);
+    border: 2px solid transparent;
+    transition:
+      border-color 0.3s,
+      background 0.3s;
+  }
+  .line.is-active {
+    border-color: var(--brown);
+    background: var(--cream);
+  }
+  .line :global(.line__thumb) {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    object-fit: cover;
+  }
+  .line__info {
+    display: grid;
+    min-width: 0;
+  }
+  .line__name {
+    font-family: var(--font-display);
+    font-size: 1.12rem;
+    font-weight: 600;
+    color: var(--brown);
+  }
+  .line__price {
+    font-size: 0.82rem;
+    color: var(--brown-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: var(--paper);
+    border: 1px solid rgb(73 43 39 / 0.12);
+  }
+  .stepper__btn {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--brown);
+    color: var(--cream);
+    transition:
+      transform 0.3s var(--ease-spring),
+      background 0.2s,
+      opacity 0.2s;
+  }
+  .stepper__btn:hover {
+    background: var(--teal);
+  }
+  .stepper__btn:active {
+    transform: scale(0.88);
+  }
+  .stepper__btn[data-step='-1'] {
+    background: transparent;
+    color: var(--brown);
+    border: 1px solid rgb(73 43 39 / 0.2);
+  }
+  .stepper__btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .stepper__val {
+    min-width: 28px;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 650;
+    color: var(--brown);
+  }
+  .stepper__val.bump {
+    animation: valbump 0.4s var(--ease-spring);
+  }
+  @keyframes valbump {
+    50% {
+      transform: scale(1.4);
+    }
+  }
+
+  .builder__fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+    gap: 12px;
+  }
+  .field {
+    display: grid;
+    gap: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--brown);
+  }
+  .field--wide {
+    grid-column: 1 / -1;
+  }
+  .field small {
+    font-weight: 400;
+    opacity: 0.7;
+  }
+  .field input,
+  .field textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid rgb(73 43 39 / 0.18);
+    border-radius: 16px;
+    background: var(--cream-soft);
+    font-weight: 400;
+    resize: vertical;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .field input:focus,
+  .field textarea:focus {
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 0 0 0 4px rgb(22 79 100 / 0.15);
+  }
+
+  .builder__summary p:first-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--brown);
+  }
+  .builder__error {
+    margin-top: 8px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: #fde3d6;
+    color: #7a2a12;
+    font-weight: 500;
+  }
+  .builder__error.shake {
+    animation: shake 0.45s;
+  }
+  @keyframes shake {
+    20%,
+    60% {
+      transform: translateX(-6px);
+    }
+    40%,
+    80% {
+      transform: translateX(6px);
+    }
+  }
+  .builder__submit {
+    --btn-hover: #1f8a4c;
+    min-height: 60px;
+    font-size: 1.08rem;
+  }
+  .builder__copy {
+    display: grid;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--brown);
+  }
+  .builder__copy textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1.5px solid rgb(73 43 39 / 0.18);
+    background: var(--cream-soft);
+    font-size: 0.85rem;
+    font-weight: 400;
+    resize: vertical;
+  }
+  .builder__hint {
+    font-size: 0.82rem;
+    color: var(--brown-soft);
+    text-align: center;
+  }
+
+  @media (max-width: 920px) {
+    .order__grid {
+      grid-template-columns: 1fr;
+    }
+    .order__mascot {
+      display: none;
+    }
+  }
+  @media (max-width: 520px) {
+    .builder__fields {
+      grid-template-columns: 1fr;
+    }
+    .line {
+      grid-template-columns: 48px 1fr auto;
+      gap: 10px;
+    }
+    .line :global(.line__thumb) {
+      width: 48px;
+      height: 48px;
+    }
+    .stepper__btn {
+      width: 36px;
+      height: 36px;
+    }
+    .line__price {
+      display: none;
+    }
+  }
+</style>

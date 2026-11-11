@@ -1,0 +1,29 @@
+---
+import logoFull from '../assets/brand/mokki-logo.svg?raw';
+import wordmark from '../assets/brand/mokki-wordmark.svg?raw';
+
+interface Props {
+  variant?: 'full' | 'wordmark';
+  class?: string;
+  title?: string;
+}
+const { variant = 'full', class: cls, title = 'MOKKI Cookies' } = Astro.props;
+const svg = (variant === 'full' ? logoFull : wordmark).replace(
+  '<svg ',
+  `<svg role="img" aria-label="${title}" `,
+);
+---
+
+<span class:list={['logo', cls]} set:html={svg} />
+
+<style>
+  .logo {
+    display: inline-block;
+    line-height: 0;
+    color: var(--brown);
+  }
+  .logo :global(svg) {
+    width: 100%;
+    height: auto;
+  }
+</style>

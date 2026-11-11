@@ -1,0 +1,190 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { SITE } from '../config/site.mjs';
+import { FLAVORS, HERO_PHOTO_CREDITS, ILLUSTRATIVE_PHOTOS } from '../data/flavors';
+
+const year = new Date().getFullYear();
+const wa = SITE.contact.whatsapp ? `https://wa.me/${SITE.contact.whatsapp}` : null;
+const ig = SITE.contact.instagram ? `https://www.instagram.com/${SITE.contact.instagram}` : null;
+const all = [...HERO_PHOTO_CREDITS, ...(ILLUSTRATIVE_PHOTOS ? FLAVORS.map((f) => f.photoCredit).filter(Boolean) : [])] as {
+  author: string;
+  url: string;
+}[];
+const credits = all.filter((c, i) => all.findIndex((o) => o.url === c.url) === i);
+---
+
+<footer class="footer">
+  <div class="footer__stripes" aria-hidden="true"></div>
+  <div class="container footer__grid">
+    <div class="footer__brand">
+      <a href="#inicio" class="footer__logo" aria-label="MOKKI Cookies — voltar ao início"><Logo /></a>
+      <p>Cookies artesanais recheados, feitos com carinho.</p>
+      <p class="footer__place"><Icon name="pin" size={18} /> {SITE.city} – {SITE.state} · entregas somente em {SITE.city}</p>
+    </div>
+
+    <nav class="footer__nav" aria-label="Rodapé">
+      <p class="footer__label">Navegue</p>
+      <ul>
+        <li><a href="#inicio">Início</a></li>
+        <li><a href="#sabores">Nossos sabores</a></li>
+        <li><a href="#sobre">Sobre nós</a></li>
+        <li><a href="#pedidos">Pedidos</a></li>
+      </ul>
+    </nav>
+
+    <div class="footer__contact">
+      <p class="footer__label">Fale com a gente</p>
+      <ul>
+        <li>
+          <a href="#pedidos"><Icon name="bag" size={18} /> Montar meu pedido</a>
+        </li>
+        {
+          wa && (
+            <li>
+              <a href={wa} target="_blank" rel="noopener">
+                <Icon name="whatsapp" size={18} /> WhatsApp
+              </a>
+            </li>
+          )
+        }
+        {
+          ig && (
+            <li>
+              <a href={ig} target="_blank" rel="noopener">
+                <Icon name="instagram" size={18} /> @{SITE.contact.instagram}
+              </a>
+            </li>
+          )
+        }
+        {
+          SITE.contact.email && (
+            <li>
+              <a href={`mailto:${SITE.contact.email}`}>
+                <Icon name="mail" size={18} /> {SITE.contact.email}
+              </a>
+            </li>
+          )
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="container footer__bottom">
+    <p>© {year} {SITE.name}. Todos os direitos reservados.</p>
+    {
+      credits.length > 0 && (
+        <p class="footer__credits">
+          Fotos:{' '}
+          {credits.map((c, i) => (
+            <>
+              <a href={c.url} target="_blank" rel="noopener">
+                {c.author}
+              </a>
+              {i < credits.length - 1 ? ', ' : ''}
+            </>
+          ))}{' '}
+          / Unsplash
+        </p>
+      )
+    }
+  </div>
+</footer>
+
+<style>
+  .footer {
+    position: relative;
+    background: var(--brown);
+    color: var(--cream);
+    padding: 90px 0 calc(28px + env(safe-area-inset-bottom));
+  }
+  .footer__stripes {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 18px;
+    background: repeating-linear-gradient(90deg, var(--brown) 0 14px, var(--blue) 14px 28px);
+  }
+  .footer__grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 40px;
+  }
+  .footer__logo {
+    display: block;
+    width: 190px;
+    margin-bottom: 18px;
+  }
+  .footer__logo :global(.logo) {
+    color: var(--cream);
+  }
+  .footer__brand p {
+    opacity: 0.85;
+  }
+  .footer__place {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px !important;
+    font-weight: 500;
+    color: var(--blue);
+    opacity: 1 !important;
+  }
+  .footer__label {
+    margin-bottom: 14px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--blue);
+  }
+  .footer ul {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .footer ul a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    transition:
+      color 0.2s,
+      transform 0.3s var(--ease-spring);
+  }
+  .footer ul a:hover {
+    color: var(--blue);
+    transform: translateX(4px);
+  }
+  .footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px 30px;
+    margin-top: 60px;
+    padding-top: 22px;
+    border-top: 1px solid rgb(255 240 189 / 0.18);
+    font-size: 0.8rem;
+    opacity: 0.75;
+  }
+  .footer__credits a {
+    text-underline-offset: 2px;
+  }
+  @media (max-width: 760px) {
+    .footer__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .footer__brand {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (max-width: 420px) {
+    .footer__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
