@@ -10,7 +10,7 @@ export const SITE = {
   name: 'MOKKI Cookies',
 
   /** Domínio final, com https:// e sem barra no fim. Ex.: 'https://www.seudominio.com.br' */
-  url: '',
+  url: 'https://mokki-cookies.vercel.app',
 
   city: 'Juiz de Fora',
   state: 'MG',
