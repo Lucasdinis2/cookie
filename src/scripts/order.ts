@@ -112,6 +112,40 @@ export function initOrder() {
     }
   });
 
+  /** Copia a mensagem do pedido (com plano B para navegadores antigos). */
+  const copyOrder = (message: string) => {
+    const title = form?.querySelector<HTMLElement>('[data-order-sent-title]');
+    const textEl = form?.querySelector<HTMLTextAreaElement>('[data-order-text]');
+    const fallback = () => {
+      textEl?.focus();
+      textEl?.select();
+      let ok = false;
+      try {
+        ok = document.execCommand('copy');
+      } catch {
+        ok = false;
+      }
+      if (title) title.textContent = ok ? 'Mensagem do pedido copiada! ✓' : 'Copie a mensagem abaixo e envie no Instagram:';
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(message).then(() => {
+        if (title) title.textContent = 'Mensagem do pedido copiada! ✓';
+      }, fallback);
+    } else fallback();
+  };
+  form?.querySelector('[data-order-copy-again]')?.addEventListener('click', () => {
+    const text = form.querySelector<HTMLTextAreaElement>('[data-order-text]')?.value;
+    if (text) copyOrder(text);
+  });
+
+  form?.addEventListener('input', (ev) => {
+    const input = ev.target as HTMLInputElement;
+    if (input.getAttribute('aria-invalid') === 'true' && input.value.trim().length >= 2) {
+      input.setAttribute('aria-invalid', 'false');
+      form.querySelector<HTMLElement>(`[data-field-error="${input.name}"]`)?.setAttribute('hidden', '');
+    }
+  });
+
   form?.addEventListener('submit', (ev) => {
     ev.preventDefault();
     const n = total();
@@ -128,7 +162,21 @@ export function initOrder() {
     }
     const data = new FormData(form);
     const nome = String(data.get('nome') || '').trim();
-    const bairro = String(data.get('bairro') || '').trim();
+    const endereco = String(data.get('endereco') || '').trim();
+    // Nome e endereço são obrigatórios
+    let firstInvalid: HTMLInputElement | null = null;
+    for (const [field, value] of [['nome', nome], ['endereco', endereco]] as const) {
+      const input = form.querySelector<HTMLInputElement>(`[name="${field}"]`);
+      const msg = form.querySelector<HTMLElement>(`[data-field-error="${field}"]`);
+      const ok = value.length >= 2;
+      input?.setAttribute('aria-invalid', String(!ok));
+      if (msg) msg.hidden = ok;
+      if (!ok && !firstInvalid) firstInvalid = input;
+    }
+    if (firstInvalid) {
+      firstInvalid.focus();
+      return;
+    }
     const obs = String(data.get('obs') || '').trim();
     const items = cfg.flavors.filter((f) => qty[f.id] > 0);
     const allPriced = items.every((f) => f.price != null);
@@ -139,8 +187,8 @@ export function initOrder() {
       '',
       `Total: ${plural(n)}`,
       ...(allPriced ? [`Valor dos cookies: ${money.format(items.reduce((s, f) => s + (f.price ?? 0) * qty[f.id], 0))}`] : []),
-      ...(nome ? [`Nome: ${nome}`] : []),
-      `Entrega em: ${bairro ? `${bairro} – ` : ''}${cfg.city} – ${cfg.state}`,
+      `Nome: ${nome}`,
+      `Endereço: ${endereco} – ${cfg.city} – ${cfg.state}`,
       ...(obs ? [`Observações: ${obs}`] : []),
       '',
       'Pedido montado pelo site.',
@@ -156,18 +204,16 @@ export function initOrder() {
       return;
     }
     if (cfg.instagram) {
-      // O Direct do Instagram não aceita texto pronto: copiamos a mensagem e abrimos a conversa.
-      const copyBox = form.querySelector<HTMLElement>('[data-order-copy]');
+      // O Instagram não aceita mensagem pronta em link: copiamos o pedido e
+      // abrimos o perfil da MOKKI (no celular abre direto no app → "Mensagem").
+      const sent = form.querySelector<HTMLElement>('[data-order-sent]');
       const textEl = form.querySelector<HTMLTextAreaElement>('[data-order-text]');
-      const hint = form.querySelector<HTMLElement>('[data-order-hint]');
       if (textEl) textEl.value = message;
-      const done = (ok: boolean) => {
-        if (hint) hint.textContent = ok ? 'Mensagem copiada! Agora é só colar no Direct e enviar. 🍪' : 'Copie a mensagem abaixo e envie no Direct.';
-        if (copyBox) copyBox.hidden = ok;
-        open(`https://ig.me/m/${cfg.instagram}`);
-      };
-      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(message).then(() => done(true), () => done(false));
-      else done(false);
+      if (sent) sent.hidden = false;
+      copyOrder(message);
+      const win = window.open(`https://www.instagram.com/${cfg.instagram}/`, '_blank');
+      if (win) win.opener = null;
+      sent?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`);

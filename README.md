@@ -25,19 +25,18 @@ npm run preview    # serve o dist/ localmente
 | Horários de atendimento/entrega | `src/config/site.mjs` → `hours` |
 | Avisos de pedido (antecedência, taxa, mínimo...) | `src/config/site.mjs` → `orderNotes` |
 | **Preços, tamanho e disponibilidade** de cada sabor | `src/data/flavors.ts` → `price`, `size`, `available` |
-| **Fotos reais dos sabores** | salve a arte com os 4 cookies e rode `npm run assets:flavors -- referencias/arquivo.png` (recorta cada cookie). Depois aponte `cutout` em `src/data/flavors.ts` e mude `ILLUSTRATIVE_PHOTOS` para `false` |
+| **Fotos dos sabores** | coloque a foto em `referencias/fotos-mokki/<sabor>.jpg` (fundo claro) e rode `npm run assets:cookies` — gera o PNG recortado em `src/assets/photos/mokki-<sabor>.png` |
 
 Campos vazios simplesmente não aparecem no site (nada de link quebrado ou dado inventado).
 Enquanto o WhatsApp estiver vazio, o botão **Fazer meu pedido** copia a mensagem do pedido e abre o **Direct do Instagram** (@mokki.cookie) — o cliente só cola e envia. Com o WhatsApp preenchido, o pedido passa a abrir direto no WhatsApp com a mensagem pronta.
 Quando houver preço em todos os sabores escolhidos, o total estimado aparece no resumo e na mensagem.
 
-> ⚠️ As fotos dos cards de sabores são **provisórias** (Unsplash, licença gratuita) e o site mostra
-> "Imagens meramente ilustrativas" até você trocá-las pelas fotos reais da MOKKI.
+> As fotos dos sabores são as fotos reais da MOKKI, recortadas em PNG com fundo transparente. O cookie 3D do topo usa a foto do cookie de Nutella.
 
 ## Como funciona o pedido
 
 1. O cliente escolhe sabores e quantidades (botões `+`/`−` ou "Pedir este sabor" nos cards).
-2. Pode informar nome, bairro e observações (opcionais).
+2. Informa nome e endereço de entrega (obrigatórios) e, se quiser, observações.
 3. **Fazer meu pedido** abre o WhatsApp com a mensagem montada. Não há checkout nem pagamento no site.
 O carrinho fica salvo no navegador do cliente (localStorage).
 
@@ -66,7 +65,7 @@ referencias/               ← artes originais e fotos-fonte
 
 ### A animação do cookie
 
-- A **superfície é uma fotografia real** recortada automaticamente; o **contorno da geometria 3D é extraído da própria foto**.
+- A **superfície é a foto real do cookie de Nutella da MOKKI**, recortada automaticamente; o **contorno da geometria 3D é extraído da própria foto**.
 - **Fratura procedural** (`src/three/fracture.ts`): o cookie é triangulado (Delaunay) e dividido em cunhas que partem do ponto de pressão + lascas menores ao longo das rachaduras e da borda.
 - **Rachaduras que andam**: o tempo de chegada da rachadura em cada ponto vem de um caminho mínimo (Dijkstra) na rede de fraturas, então elas se propagam do centro para a borda conforme o scroll, e as fendas se abrem de verdade.
 - **Dentro e fora realistas**: topo = foto; lateral = crosta real da foto; base tostada com poros; face da quebra = miolo fotográfico (sintetizado sem repetição a partir de uma foto de cookie partido), com os pedaços de chocolate da superfície continuando para dentro da quebra.
@@ -78,12 +77,12 @@ referencias/               ← artes originais e fotos-fonte
 
 ```bash
 npm run assets:brand     # vetoriza logo/mascote a partir de referencias/
-npm run assets:photos    # foto real → texturas + contorno + recorte PNG
+npm run assets:photos    # cookie do 3D (padrão: mokki-nutella.png) → texturas + contorno
 npm run assets:icons     # favicon, apple-touch-icon e og-image
-npm run assets:flavors -- referencias/arte.png   # recorta os 4 cookies da arte
+npm run assets:cookies   # fotos dos sabores → PNG recortado (referencias/fotos-mokki)
 ```
 
-Para usar **uma foto do cookie da própria MOKKI** no 3D: fotografe o cookie inteiro, de cima, em fundo claro e liso; salve como `referencias/fotos/hero-classic.jpg`, ajuste `SEED`/coordenadas em `scripts/prepare-photos.mjs` se necessário e rode `npm run assets:photos`.
+Para trocar o cookie do 3D: `npm run assets:photos -- caminho/da/foto.png` (foto de cima, fundo claro).
 
 ## Publicação
 
@@ -97,5 +96,4 @@ Depois, cadastre o site no Google Search Console e crie/atualize o **Perfil da E
 
 ## Créditos das fotos
 
-Fotos via [Unsplash](https://unsplash.com) (licença gratuita): Imad 786 (textura do cookie 3D),
-Swiss Educational College (miolo da quebra e card Nutella), Eiliv Aceron, With Mahdy e 12photostory (cards provisórios).
+Fotos dos cookies: MOKKI Cookies. Textura do miolo da quebra: Swiss Educational College / [Unsplash](https://unsplash.com/photos/ufwocY-3WOA) (licença gratuita).

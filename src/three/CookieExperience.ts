@@ -272,7 +272,7 @@ export class CookieExperience {
           '#include <map_fragment>',
           /* glsl */ `#include <map_fragment>
           // Pedaços de chocolate da superfície continuam para dentro da quebra
-          vec3 topC = texture2D(uTopMap, 0.5 + vOrig.xz / 2.24).rgb;
+          vec3 topC = texture2D(uTopMap, 0.5 + vOrig.xz * 0.9 / 2.24).rgb;
           float tl = dot(topC, vec3(0.299, 0.587, 0.114));
           float depthLimit = 0.42 + 0.22 * mkNoise(vOrig * 14.0);
           float choco = (1.0 - smoothstep(0.09, 0.17, tl)) * (1.0 - smoothstep(depthLimit - 0.12, depthLimit, vDepth));

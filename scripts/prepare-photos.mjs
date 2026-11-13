@@ -4,24 +4,24 @@
  *  2. Extrai o contorno real (perfil radial) → a geometria 3D usa esse contorno
  *  3. Gera textura de cor, relevo (normal map) e brilho (roughness) alinhados
  *
- * Uso: node scripts/prepare-photos.mjs
- * Entrada: referencias/fotos/hero-classic.jpg (Unsplash, licença livre)
+ * Uso: node scripts/prepare-photos.mjs [foto-do-cookie]
+ * Entrada padrão: src/assets/photos/mokki-nutella.png (cookie real da MOKKI,
+ * recortado por scripts/cut-photos.mjs). Aceita também foto com fundo claro.
  */
 import sharp from 'sharp';
 import { writeFile, mkdir } from 'node:fs/promises';
 
-const SRC = 'referencias/fotos/hero-classic.jpg';
+const SRC = process.argv[2] || 'src/assets/photos/mokki-nutella.png';
 const UV_EXTENT = 1.12; // deve bater com SHAPE.uvExtent
 const ANGLES = 360;
 
 await mkdir('public/textures', { recursive: true });
 
-const { data, info } = await sharp(SRC).raw().toBuffer({ resolveWithObject: true });
+const { data, info } = await sharp(SRC).flatten({ background: '#f8f8f8' }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
 const W = info.width, H = info.height, C = info.channels;
 
 // --- 1+2. Contorno real por varredura radial a partir do centro -------------
 // Massa: saturada e clara; chocolate: escuro e bem saturado. Sombra e papel não.
-const SEED = { x: 1540, y: 1940 };
 function cookieAt(x, y) {
   if (x < 0 || y < 0 || x >= W || y >= H) return false;
   const i = (Math.round(y) * W + Math.round(x)) * C;
@@ -30,8 +30,9 @@ function cookieAt(x, y) {
   const s = max === 0 ? 0 : (max - min) / max;
   return (s > 0.2 && max > 0.55) || (s > 0.5 && max > 0.25);
 }
-// Máscara em 1/4 da resolução → componente conectado ao centro → sem buracos.
-const Q = 4, MW = Math.floor(W / Q), MH = Math.floor(H / Q);
+// Máscara em resolução reduzida → componente conectado ao centro → sem buracos.
+const Q = Math.max(1, Math.round(W / 750)), MW = Math.floor(W / Q), MH = Math.floor(H / Q);
+const K = W / 3000; // escala relativa à foto original de referência
 const raw = new Uint8Array(MW * MH);
 for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) raw[y * MW + x] = cookieAt(x * Q, y * Q) ? 1 : 0;
 function flood(mask, sx, sy, value) {
@@ -65,9 +66,22 @@ function morph(mask, r, grow) {
   return out;
 }
 // Abertura morfológica: quebra pontes finas com os cookies vizinhos.
-const opened = morph(morph(raw, 6, false), 6, true).map((v, i) => v & raw[i]);
-let comp = flood(opened, Math.round(1250 / Q), Math.round(2350 / Q), 1);
-comp = morph(morph(comp, 3, true), 3, false);
+const rOpen = Math.max(2, Math.round((24 * K) / Q));
+const rClose = Math.max(1, Math.round((12 * K) / Q));
+const opened = morph(morph(raw, rOpen, false), rOpen, true).map((v, i) => v & raw[i]);
+// semente: pixel de cookie mais próximo do centro de massa
+let mx = 0, my = 0, mn = 0;
+for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (opened[y * MW + x]) { mx += x; my += y; mn++; }
+mx /= mn; my /= mn;
+let seedP = 0, seedD = Infinity;
+for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+  if (!opened[y * MW + x]) continue;
+  const d = (x - mx) ** 2 + (y - my) ** 2;
+  if (d < seedD) { seedD = d; seedP = y * MW + x; }
+}
+let comp = flood(opened, seedP % MW, Math.floor(seedP / MW), 1);
+comp = morph(morph(comp, rClose, true), rClose, false);
+const SEED = { x: mx * Q, y: my * Q };
 const outsideBg = flood(comp, 0, MH - 1, 0);
 const solid = outsideBg.map((v) => 1 - v);
 function profile(cx, cy) {
@@ -76,11 +90,11 @@ function profile(cx, cy) {
     const th = (k / ANGLES) * Math.PI * 2;
     const dx = Math.cos(th), dy = -Math.sin(th); // +z local = para cima na foto
     let last = 0;
-    for (let r = 0; r < 1800; r += 1) {
+    for (let r = 0; r < W; r += 1) {
       const x = Math.round((cx + dx * r) / Q), y = Math.round((cy + dy * r) / Q);
       if (x < 0 || y < 0 || x >= MW || y >= MH) break;
       if (solid[y * MW + x]) last = r;
-      else if (r - last > 40) break;
+      else if (r - last > Math.max(6, 40 * K)) break;
     }
     out[k] = last;
   }
@@ -114,7 +128,7 @@ for (let it = 0; it < 3; it++) {
 const FR = smoothFull.reduce((a, b) => a + b, 0) / ANGLES;
 const smooth = smoothFull.map((r) => r / 2);
 const outline = Array.from(smoothFull, (r) => Number((r / FR).toFixed(4)));
-await writeFile('src/lib/procedural/heroOutline.js', '// Gerado por scripts/prepare-photos.mjs — contorno real do cookie da foto (unsplash.com/photos/5So4kc3Ocus)' + String.fromCharCode(10) + 'export const HERO_OUTLINE = ' + JSON.stringify(outline) + ';' + String.fromCharCode(10));
+await writeFile('src/lib/procedural/heroOutline.js', '// Gerado por scripts/prepare-photos.mjs — contorno real do cookie da foto da MOKKI' + String.fromCharCode(10) + 'export const HERO_OUTLINE = ' + JSON.stringify(outline) + ';' + String.fromCharCode(10));
 console.log(`centro (${FCX.toFixed(0)}, ${FCY.toFixed(0)}), raio médio ${FR.toFixed(0)}px, min ${Math.min(...outline)} max ${Math.max(...outline)}`);
 
 // --- 3. Texturas alinhadas ao espaço local do cookie ---------------------------

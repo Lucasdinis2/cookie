@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import Icon from './Icon.astro';
-import { FLAVORS, ILLUSTRATIVE_PHOTOS } from '../data/flavors';
+import { FLAVORS } from '../data/flavors';
 import { SITE } from '../config/site.mjs';
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: SITE.currency });
@@ -33,27 +33,15 @@ const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: SITE
           FLAVORS.map((f, i) => (
             <li class={`flavor flavor--${f.theme}`} data-flavor-card style={`--i:${i}`}>
               <article aria-labelledby={`flavor-${f.id}`}>
-                <div class:list={['flavor__media', f.cutout && 'flavor__media--cutout']} data-tilt>
-                  {f.cutout ? (
-                    <Image
-                      src={f.cutout}
-                      alt={f.imageAlt}
-                      widths={[320, 480, 640]}
-                      sizes="(max-width: 768px) 60vw, 360px"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  ) : (
-                    <Image
-                      src={f.image}
-                      alt={f.imageAlt}
-                      widths={[360, 520, 720, 960]}
-                      sizes="(max-width: 768px) 82vw, (max-width: 1240px) 44vw, 560px"
-                      loading="lazy"
-                      decoding="async"
-                      style={`object-position:${f.imagePosition}`}
-                    />
-                  )}
+                <div class="flavor__media flavor__media--cutout" data-tilt>
+                  <Image
+                    src={f.image}
+                    alt={f.imageAlt}
+                    widths={[360, 540, 720, 900]}
+                    sizes="(max-width: 768px) 60vw, 380px"
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <span class="flavor__num" aria-hidden="true">
                     Nº {String(i + 1).padStart(2, '0')}
                   </span>
@@ -92,7 +80,6 @@ const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: SITE
       {FLAVORS.map((_, i) => <span class={i === 0 ? 'is-active' : ''} />)}
     </div>
 
-    {ILLUSTRATIVE_PHOTOS && <p class="flavors__note">Imagens meramente ilustrativas.</p>}
   </div>
 
   <div class="toast" role="status" aria-live="polite" data-toast hidden>
@@ -211,7 +198,7 @@ const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: SITE
       color-mix(in srgb, var(--card-bg) 82%, white);
   }
   .flavor__media--cutout :global(img) {
-    width: 68%;
+    width: 76%;
     height: auto;
     object-fit: contain;
     transform: rotate(-8deg);

@@ -8,6 +8,7 @@ import { SITE } from '../config/site.mjs';
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: SITE.currency });
 const hasPrices = FLAVORS.some((f) => f.price != null);
 const channel = SITE.contact.whatsapp ? 'whatsapp' : SITE.contact.instagram ? 'instagram' : 'whatsapp';
+const igUrl = SITE.contact.instagram ? `https://www.instagram.com/${SITE.contact.instagram}/` : '';
 const orderConfig = {
   whatsapp: SITE.contact.whatsapp,
   instagram: SITE.contact.instagram,
@@ -76,12 +77,12 @@ const orderConfig = {
             <div class="line" data-line={f.id}>
               <Image
                 class="line__thumb"
-                src={f.cutout ?? f.image}
+                src={f.image}
                 alt=""
                 width={112}
                 height={112}
                 loading="lazy"
-                style={f.cutout ? 'object-fit:contain' : `object-position:${f.imagePosition}`}
+                style="object-fit:contain"
               />
               <div class="line__info">
                 <span class="line__name" id={`line-${f.id}`}>
@@ -107,12 +108,22 @@ const orderConfig = {
 
       <div class="builder__fields">
         <label class="field">
-          <span>Seu nome <small>(opcional)</small></span>
-          <input type="text" name="nome" autocomplete="name" maxlength="80" />
+          <span>Seu nome</span>
+          <input type="text" name="nome" autocomplete="name" maxlength="80" required aria-required="true" />
+          <span class="field__error" data-field-error="nome" hidden>Informe seu nome.</span>
         </label>
         <label class="field">
-          <span>Bairro <small>(opcional)</small></span>
-          <input type="text" name="bairro" autocomplete="address-level3" maxlength="80" placeholder={`Seu bairro em ${SITE.city}`} />
+          <span>Endereço de entrega</span>
+          <input
+            type="text"
+            name="endereco"
+            autocomplete="street-address"
+            maxlength="160"
+            placeholder={`Rua, número e bairro (${SITE.city})`}
+            required
+            aria-required="true"
+          />
+          <span class="field__error" data-field-error="endereco" hidden>Informe o endereço para a entrega.</span>
         </label>
         <label class="field field--wide">
           <span>Observações <small>(opcional)</small></span>
@@ -137,14 +148,34 @@ const orderConfig = {
       <p class="builder__hint" data-order-hint>
         {
           channel === 'instagram'
-            ? `Copiamos a mensagem do seu pedido e abrimos o Direct do @${SITE.contact.instagram} — é só colar e enviar. Por lá combinamos pagamento e entrega.`
+            ? `Copiamos a mensagem do seu pedido e abrimos o Instagram da @${SITE.contact.instagram}. Lá é só tocar em “Mensagem”, colar e enviar. Por lá combinamos pagamento e entrega.`
             : 'Você será levado ao WhatsApp com a mensagem do pedido pronta. Por lá combinamos pagamento e entrega.'
         }
       </p>
-      <div class="builder__copy" data-order-copy hidden>
-        <label for="order-text">Se preferir, copie a mensagem do pedido:</label>
-        <textarea id="order-text" rows="6" readonly data-order-text></textarea>
-      </div>
+      {
+        channel === 'instagram' && (
+          <div class="builder__sent" data-order-sent hidden>
+            <p class="builder__sent-title" data-order-sent-title role="status">
+              Mensagem do pedido copiada! ✓
+            </p>
+            <ol>
+              <li>
+                No Instagram da <strong>@{SITE.contact.instagram}</strong>, toque em <strong>Mensagem</strong>.
+              </li>
+              <li>Cole a mensagem e envie. Pronto! 🍪</li>
+            </ol>
+            <textarea rows="7" readonly data-order-text aria-label="Mensagem do pedido" />
+            <div class="builder__sent-actions">
+              <a class="btn btn--block" href={igUrl} target="_blank" rel="noopener">
+                <Icon name="instagram" size={20} /> Abrir Instagram da @{SITE.contact.instagram}
+              </a>
+              <button type="button" class="builder__again" data-order-copy-again>
+                Copiar mensagem de novo
+              </button>
+            </div>
+          </div>
+        )
+      }
     </form>
   </div>
 
@@ -388,6 +419,15 @@ const orderConfig = {
     font-weight: 600;
     color: var(--brown);
   }
+  .field__error {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #9a2f12;
+  }
+  .field input[aria-invalid='true'] {
+    border-color: #c4471f;
+    box-shadow: 0 0 0 4px rgb(196 71 31 / 0.12);
+  }
   .field--wide {
     grid-column: 1 / -1;
   }
@@ -451,22 +491,57 @@ const orderConfig = {
     min-height: 60px;
     font-size: 1.08rem;
   }
-  .builder__copy {
+  .builder__sent {
     display: grid;
-    gap: 6px;
-    font-size: 0.85rem;
-    font-weight: 600;
+    gap: 12px;
+    padding: 18px;
+    border-radius: var(--radius-m);
+    background: var(--blue-soft);
+    border: 1.5px solid rgb(22 79 100 / 0.2);
     color: var(--brown);
+    animation: pop 0.5s var(--ease-spring);
   }
-  .builder__copy textarea {
+  @keyframes pop {
+    from {
+      transform: scale(0.96);
+      opacity: 0;
+    }
+  }
+  .builder__sent-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 650;
+    color: var(--teal);
+  }
+  .builder__sent ol {
+    margin: 0;
+    padding-left: 20px;
+    display: grid;
+    gap: 4px;
+    font-size: 0.95rem;
+  }
+  .builder__sent textarea {
     width: 100%;
     padding: 12px;
     border-radius: 14px;
-    border: 1.5px solid rgb(73 43 39 / 0.18);
-    background: var(--cream-soft);
+    border: 1.5px solid rgb(73 43 39 / 0.15);
+    background: var(--paper);
     font-size: 0.85rem;
-    font-weight: 400;
     resize: vertical;
+  }
+  .builder__sent-actions {
+    display: grid;
+    gap: 8px;
+  }
+  .builder__again {
+    justify-self: center;
+    border: 0;
+    background: none;
+    padding: 8px;
+    color: var(--teal);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
   .builder__hint {
     font-size: 0.82rem;

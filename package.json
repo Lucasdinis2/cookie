@@ -11,7 +11,7 @@
     "assets:brand": "node scripts/trace-brand.mjs",
     "assets:photos": "node scripts/prepare-photos.mjs",
     "assets:icons": "node scripts/make-icons.mjs",
-    "assets:flavors": "node scripts/cut-flavors.mjs"
+    "assets:cookies": "node scripts/cut-photos.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",

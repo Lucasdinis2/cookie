@@ -2,16 +2,12 @@
 import Logo from './Logo.astro';
 import Icon from './Icon.astro';
 import { SITE } from '../config/site.mjs';
-import { FLAVORS, HERO_PHOTO_CREDITS, ILLUSTRATIVE_PHOTOS } from '../data/flavors';
+import { TEXTURE_PHOTO_CREDITS } from '../data/flavors';
 
 const year = new Date().getFullYear();
 const wa = SITE.contact.whatsapp ? `https://wa.me/${SITE.contact.whatsapp}` : null;
 const ig = SITE.contact.instagram ? `https://www.instagram.com/${SITE.contact.instagram}` : null;
-const all = [...HERO_PHOTO_CREDITS, ...(ILLUSTRATIVE_PHOTOS ? FLAVORS.map((f) => f.photoCredit).filter(Boolean) : [])] as {
-  author: string;
-  url: string;
-}[];
-const credits = all.filter((c, i) => all.findIndex((o) => o.url === c.url) === i);
+const credits = TEXTURE_PHOTO_CREDITS;
 ---
 
 <footer class="footer">
@@ -75,7 +71,7 @@ const credits = all.filter((c, i) => all.findIndex((o) => o.url === c.url) === i
     {
       credits.length > 0 && (
         <p class="footer__credits">
-          Fotos:{' '}
+          Textura do miolo:{' '}
           {credits.map((c, i) => (
             <>
               <a href={c.url} target="_blank" rel="noopener">
